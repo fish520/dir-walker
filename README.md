@@ -7,6 +7,42 @@ An safe, simple realization to traverse an directory in an asynchronous way, rec
 npm install FsWalker
 ```
 
+## Usage
+
+An example:
+
+```javascript
+var FsWalker = require('fswalker');
+
+function fsApi(path, init, callback) {
+	var walker = new FsWalker(path);
+	init(walker);
+	walker.once("end", callback);
+}
+
+fsApi("D:\\workspace", function init(walker){
+	walker.on("file", function (path, stat){
+		walker.pause();
+		setTimeout(function(){walker.resume()}, 100);  // print a file every 100ms
+		console.log("%c" + log_indent + path, "color: #999;");
+	}).on("dir", function(path, stat){
+		walker.pause();
+		setTimeout(function(){walker.resume()}, 100);
+		console.log(log_indent + ">> " + path);
+		if(log_indent == "") log_indent = "- ";
+		else log_indent = "\t" + log_indent;
+		if(log_indent.length > 5) {
+		   walker.end();    // terminate the recurse in an specific condition
+		}
+	}).on("dir_pop", function(path){
+		log_indent = log_indent.substr(1);
+	});
+}, function (complete){
+	console.log("END: completed = " + complete);
+});
+```
+
+
 ## API
 
 ### new FsWalker(path)
@@ -57,4 +93,14 @@ An regular file was traversed.
 ### Event: 'other'
 
 For ther type of files, such as BlockDevice, SymbolicLink, etc.
+
+## FAQ
+
+Both of the `step` and `pause` API are functioning in an asynchronous way, indeed.So we need to wait for the next event before we can really change the walker state.
+
+The following rules come as a good coding style, which we should keep in mind to get rid of something Illogical:
+
+1. calling `resume` right after `step` is useless, you should delay it in nextTick. 
+2. calling `step` right after `pause` is useless, you should delay it in nextTick. 
+3. One `step` call followed by another in a synchronous code is useless. 
 
