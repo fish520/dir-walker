@@ -106,11 +106,11 @@ Both of the `step` and `pause` API are functioning in an asynchronous way, indee
 
 The following rules come as a good coding style, which we should keep in mind to get rid of something Illogical:
 
-1. calling `resume` right after `step` is useless, you should delay it in nextTick. 
-2. calling `step` right after `pause` is useless, you should delay it in nextTick. 
+1. calling `resume` right after `step` is useless, you should delay it in `process.nextTick`. 
+2. calling `step` right after `pause` is useless, you should delay it in `process.nextTick`. 
 3. One `step` call followed by another in a synchronous code is useless. 
 
-These are what comes with asynchronous operation, and not supposed to be regarded as bugs.
+_These are what comes with asynchronous operation, and not supposed to be regarded as bugs._
 
 ## Features may be added next
 
