@@ -1,10 +1,10 @@
-# FsWalker
+# dir-walker
 An safe, simple realization to traverse an directory in an asynchronous way, recursively, with pausable &amp; resumable feature.
 
 ## Install
 
 ```bash
-npm install FsWalker
+npm install dir-walker
 ```
 
 ## Usage
@@ -12,10 +12,10 @@ npm install FsWalker
 An example:
 
 ```javascript
-var FsWalker = require('fswalker');
+var DirWalker = require('dir-walker');
 
 function fsApi(path, init, callback) {
-	var walker = new FsWalker(path);
+	var walker = new DirWalker(path);
 	init(walker);
 	walker.once("end", callback);
 }
@@ -45,24 +45,24 @@ fsApi("D:\\workspace", function init(walker){
 
 ## API
 
-### new FsWalker(path)
+### new DirWalker(path)
 
-Returns a new FsWalker instance, the FsWalker is inherited from EventEmitter, and the recurse will start in the next event loop,
+Returns a new DirWalker instance, the DirWalker is inherited from EventEmitter, and the recurse will start in the next event loop,
 so events bindings should be executed in the current event loop.
 
-### FsWalker#pause()
+### DirWalker#pause()
 
 Pause the recurse I/O immediately.
 
-### FsWalker#resume()
+### DirWalker#resume()
 
 Resume a paused walker.
 
-### FsWalker#step()
+### DirWalker#step()
 
-If the FsWalker instance is in a paused state, this method makes it `going a step forward`, which means reading a file, a directory path (child items not included) or something else. Nothing would be done otherwise.
+If the DirWalker instance is in a paused state, this method makes it `going a step forward`, which means reading a file, a directory path (child items not included) or something else. Nothing would be done otherwise.
 
-### FsWalker#end()
+### DirWalker#end()
 
 Terminate the recurse, no more I/O will be executed. An `end` event is triggered with the flag `false`, which means that the I/O is not completed.
 
@@ -109,5 +109,4 @@ These are what comes with asynchronous operation, and not supposed to be regarde
 ## Features may be added next
 
 Think you are dealing with a directory with unbelievable depth, and you may want to traverse it just a certain depth, let't say three. How is it possible ? It's evidently not efficient to just use a `depth counter`, since we are actually causing unnecessary I/O with every extra child file inside the directory. This is where the `skip` method may help with.
-The `FsWalker#skip()` method may just skip the left files in the current child directory, and go back to the parent directory.
-
+The `DirWalker#skip()` method may just skip the left files in the current child directory, and go back to the parent directory.
