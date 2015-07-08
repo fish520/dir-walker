@@ -1,6 +1,12 @@
 # dir-walker
 An safe, simple realization to traverse an directory in an asynchronous way, recursively, with pausable &amp; resumable feature.
 
+**graceful features**
+
++ simple and efficient, without any dependencies.
++ fully asynchronous.
++ pausable and resumable, with easy control API.
+
 ## Install
 
 ```bash
