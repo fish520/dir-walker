@@ -1,1 +1,26 @@
-
+{
+  "name": "fswalker",
+  "version": "1.0.0",
+  "description": "An safe, simple realization to traverse an directory in an asynchronous way, recursively, with pausable & resumable feature.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fish520/FsWalker.git"
+  },
+  "keywords": [
+    "directory",
+    "traverse",
+    "recursive",
+    "asynchronous",
+    "recurse"
+  ],
+  "author": "SmallFish <fish1953@yeah.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fish520/FsWalker/issues"
+  },
+  "homepage": "https://github.com/fish520/FsWalker#readme"
+}
