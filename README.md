@@ -116,3 +116,8 @@ _These are what comes with asynchronous operation, and not supposed to be regard
 
 Think you are dealing with a directory with unbelievable depth, and you may want to traverse it just a certain depth, let't say three. How is it possible ? It's evidently not efficient to just use a `depth counter`, since we are actually causing unnecessary I/O with every extra child file inside the directory. This is where the `skip` method may help with.
 The `DirWalker#skip()` method may just skip the left files in the current child directory, and go back to the parent directory.
+
+## License
+
+The MIT License.
+
