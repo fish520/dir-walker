@@ -8,7 +8,7 @@ function fsApi(path, init, callback) {
 
 var log_indent = "";
 
-fsApi("D:\\SDK\\Ant\\etc", function init(walker){
+fsApi("D:\\workspace", function init(walker){
     walker.on("file", function (path, stat){
         walker.pause();
         setTimeout(function(){walker.resume()}, 100);  // print a file every 100ms
