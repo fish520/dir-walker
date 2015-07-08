@@ -96,11 +96,18 @@ For ther type of files, such as BlockDevice, SymbolicLink, etc.
 
 ## FAQ
 
-Both of the `step` and `pause` API are functioning in an asynchronous way, indeed.So we need to wait for the next event before we can really change the walker state.
+Both of the `step` and `pause` API are functioning in an asynchronous way, indeed. So we need to wait for the next event before we can really change the walker state.
 
 The following rules come as a good coding style, which we should keep in mind to get rid of something Illogical:
 
 1. calling `resume` right after `step` is useless, you should delay it in nextTick. 
 2. calling `step` right after `pause` is useless, you should delay it in nextTick. 
 3. One `step` call followed by another in a synchronous code is useless. 
+
+These are what comes with asynchronous operation, and not supposed to be regarded as bugs.
+
+## Features may be added next
+
+Think you are dealing with a directory with unbelievable depth, and you may want to traverse it just a certain depth, let't say three. How is it possible ? It's evidently not efficient to just use a `depth counter`, since we are actually causing unnecessary I/O with every extra child file inside the directory. This is where the `skip` method may help with.
+The `FsWalker#skip()` method may just skip the left files in the current child directory, and go back to the parent directory.
 
