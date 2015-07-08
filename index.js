@@ -4,11 +4,11 @@ var libUtil = require("util");
 var libFs = require("fs");
 var libPath = require("path");
 
-function FsWalker(path) {
+function DirWalker(path) {
 	var self = this;
 	EventEmitter.call(this);
 	process.nextTick(function(){
-		_fsRecurse(path, self, function(){
+		_dirRecurse(path, self, function(){
 			if(!self.ended) {		// avoid triggering the `end` event twice when calling the tail `step()` in a paused state.
 				self.ended = true;
 				self.emit("end", true);
@@ -17,19 +17,19 @@ function FsWalker(path) {
 	});
 }
 
-libUtil.inherits(FsWalker, EventEmitter);
+libUtil.inherits(DirWalker, EventEmitter);
 
 /*
 * Pause the recursion, no more event will be triggered.
 */
-FsWalker.prototype.pause = function() {
+DirWalker.prototype.pause = function() {
 	this._paused = true;
 }
 
 /*
 * Go on the recursion.
 */
-FsWalker.prototype.resume = function() {
+DirWalker.prototype.resume = function() {
 	var next = this._goon;
 	this._paused = false;
 	if(typeof next === "function") {
@@ -41,7 +41,7 @@ FsWalker.prototype.resume = function() {
 /*
 * Go a single step forward manually.
 */
-FsWalker.prototype.step = function() {
+DirWalker.prototype.step = function() {
 	var next = this._goon;
 	if(/*this._paused === true && */typeof next === "function") {
 		// really necessary, 
@@ -55,7 +55,7 @@ FsWalker.prototype.step = function() {
 /*
 * Terminate the recurse manually, well-designed.
 */
-FsWalker.prototype.end = function() {
+DirWalker.prototype.end = function() {
 	var self = this;
 	this.pause();
 	this._goon = null;		// if _tick aready executed.
@@ -81,7 +81,7 @@ function _tick(walker, next) {
 /*
 * Traverse the directory in an asynchronous way, recursively.
 */
-function _fsRecurse(path, walker, next) {
+function _dirRecurse(path, walker, next) {
 
 	libFs.stat(path, function(err, stat) {
 
@@ -105,7 +105,7 @@ function _fsRecurse(path, walker, next) {
 				function oneByOne() {
 					var file;
 					if(file = files.shift()) {
-						_fsRecurse(libPath.join(base, file), walker, oneByOne);
+						_dirRecurse(libPath.join(base, file), walker, oneByOne);
 					} else {
 						walker.emit("dir_pop", base);
 						_tick(walker, next);
@@ -124,4 +124,4 @@ function _fsRecurse(path, walker, next) {
 	});
 }
 
-module.exports = FsWalker;
+module.exports = DirWalker;
