@@ -1,6 +1,8 @@
 # dir-walker
 An safe, simple realization to traverse an directory in an asynchronous way, recursively, with pausable &amp; resumable feature.
 
+[![NPM](https://nodei.co/npm/dir-walker.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/dir-walker/)
+
 **graceful features**
 
 + simple and efficient, without any dependencies.
