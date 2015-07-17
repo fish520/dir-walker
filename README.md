@@ -11,6 +11,8 @@ An safe, simple realization to traverse an directory in an asynchronous way, rec
 
 ## Install
 
+You can install bower using the following command:
+
 ```bash
 npm install dir-walker
 ```
