@@ -28,28 +28,31 @@ function fsApi(path, init, callback) {
 	walker.once("end", callback);
 }
 
-fsApi("D:\\workspace", function init(walker){
+fsApi("D:\\.git", function init(walker){
 	walker.on("file", function (path, stat){
 		walker.pause();
 		setTimeout(function(){walker.resume()}, 100);  // print a file every 100ms
-		console.log("%c" + log_indent + path, "color: #999;");
+		console.log("%c" + log_indent + "- " + path, "color: #999;");
 	}).on("dir", function(path, stat){
 		walker.pause();
 		setTimeout(function(){walker.resume()}, 100);
-		console.log(log_indent + ">> " + path);
-		if(log_indent == "") log_indent = "- ";
-		else log_indent = "\t" + log_indent;
+		console.log("%c" + log_indent + "+ " + path, "font-weight:bold;color:blue;background:#eee;");
+		log_indent += "\t";
 		if(log_indent.length > 5) {
 		   walker.end();    // terminate the recurse in an specific condition
 		}
 	}).on("dir_pop", function(path){
 		log_indent = log_indent.substr(1);
+		console.log("%c" + log_indent + "<< " + path, "font-weight:bold;color:#19BB02;background:#FAFCE2;");
 	});
 }, function (complete){
-	console.log("END: completed = " + complete);
+	console.log("callback called.");
 });
 ```
 
+output:
+
+![](https://raw.githubusercontent.com/fish520/ImageCache/master/dir-walker/shot.png "screenshot of test running on node-webkit")
 
 ## API
 
