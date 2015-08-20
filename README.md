@@ -83,18 +83,19 @@ Terminate the recurse, no more I/O will be executed. An `end` event is triggered
 
 An directory found.
 
-+ *path* the path of the current directory.
-+ *stat* the `stat` object of the current directory.
++ *`path`* - the path of the current directory.
++ *`stat`* - the `stat` object of the current directory.
 
 ### Event: 'dir_pop'
 
 An directory was fully traversed.
 
-+ *path* the path of the current directory.
-+ *stat* the `stat` object of the current directory.
++ *`path`* - the path of the current directory.
++ *`stat`* - the `stat` object of the current directory.
 
 ### Event: 'error'
 
++ *`err`* - the error object.
 An wrapper for any FileSystem I/O error throwed internally.
 
 ### Event: 'file'
@@ -104,6 +105,10 @@ An regular file was traversed.
 ### Event: 'other'
 
 For ther type of files, such as BlockDevice, SymbolicLink, etc.
+
+### Event: 'end'
+
++ *`complete`* - boolean flag to notify the callback if it is interupted by calling `end()` mannually.
 
 ## FAQ
 
