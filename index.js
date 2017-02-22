@@ -1,127 +1,205 @@
 
-var EventEmitter = require("events").EventEmitter;
-var libUtil = require("util");
-var libFs = require("fs");
-var libPath = require("path");
+var EventEmitter = require("events").EventEmitter
+var libUtil = require("util")
+var libFs = require("fs")
+var libPath = require("path")
 
-function DirWalker(path) {
-	var self = this;
-	EventEmitter.call(this);
-	process.nextTick(function(){
-		_dirRecurse(path, self, function(){
-			if(!self.ended) {		// avoid triggering the `end` event twice when calling the tail `step()` in a paused state.
-				self.ended = true;
-				self.emit("end", true);
+function DirWalker(comparator) {
+	var skip = false
+
+	EventEmitter.call(this)
+
+	// in a `dir` event, invoking `ignore()` will avoid travelling things inside that directory.
+	this.ignore = function() {
+		skip = true
+	}
+
+	// a switcher which return the `skip` flag and reset it to false if it's true.
+	this._kickout = function() {
+		return skip ? !(skip = false) : false
+	}
+
+	if(typeof comparator === "function") {
+		this.__sortfunc__ = comparator
+	}
+}
+
+libUtil.inherits(DirWalker, EventEmitter)
+
+/**
+ * start the walker.
+ */
+DirWalker.prototype.start = function(path, dest) {
+	var self = this
+
+	this.start = function(){}
+
+	if(dest == undefined) {
+		_dirRecurse(path, self, function() {
+			if (!self.__ended__) {
+				self.__ended__ = true
+				self.emit("end", true)
 			}
-		});
-	});
-}
-
-libUtil.inherits(DirWalker, EventEmitter);
-
-/*
-* Pause the recursion, no more event will be triggered.
-*/
-DirWalker.prototype.pause = function() {
-	this._paused = true;
-}
-
-/*
-* Go on the recursion.
-*/
-DirWalker.prototype.resume = function() {
-	var next = this._goon;
-	this._paused = false;
-	if(typeof next === "function") {
-		this._goon = null;
-		next();
-	}
-}
-
-/*
-* Go a single step forward manually.
-*/
-DirWalker.prototype.step = function() {
-	var next = this._goon;
-	if(/*this._paused === true && */typeof next === "function") {
-		// really necessary, 
-		// or we may calling the same `next` again when `step` is called twice continuously,
-		// which lead to a new recurse branch and the result is unkown.
-		this._goon = null;
-		next();
-	}
-}
-
-/*
-* Terminate the recurse manually, well-designed.
-*/
-DirWalker.prototype.end = function() {
-	var self = this;
-	this.pause();
-	this._goon = null;		// if _tick aready executed.
-	process.nextTick(function(){	// Think if we execute `walker.resume()` in the next event loop, in an `end` callback, this is what we defend with.
-		self._goon = null;
-	});
-	this.emit("end", false);
-}
-
-/*
-* Pause and remember the pause point, or just keep going on.
-* @param {Object} walker  The walker object that holds the recurse state.
-* @param {Function} next  The callback that consume the stack of recursive algorithm.
-*/
-function _tick(walker, next) {
-	if(walker._paused) {
-		walker._goon = next;
+		})
 	} else {
-		next();
+		_syncRecursive(path, dest, self, function() {
+			if (!self.__ended__) {
+				self.__ended__ = true
+				self.emit("end", true)
+			}
+		})
 	}
 }
 
-/*
-* Traverse the directory in an asynchronous way, recursively.
-*/
+/**
+ * Pause the recursion.
+ */
+DirWalker.prototype.pause = function() {
+	this.__paused__ = true
+}
+
+/**
+ * Go on the recursion.
+ */
+DirWalker.prototype.resume = function() {
+	var next = this.__next__
+
+	if (typeof next === "function") {
+		this.__next__ = null
+		this.__paused__ = false
+		next()
+	}
+}
+
+/**
+ * Go a single step manually, supposed to be invoked in a paused state only.
+ */
+DirWalker.prototype.step = function() {
+	var next = this.__next__
+	if (typeof next === "function") {
+		this.__next__ = null
+		next()
+	}
+}
+
+/**
+ * Terminate the recurse manually, well-designed.
+ */
+DirWalker.prototype.end = function() {
+	this.__paused__ ? this.emit("end", false) : this.pause()
+	this.__next__ = null
+	this.__ended__ = true
+}
+
+/**
+ * Remember the pause point, or just keep going on.
+ */
+function _tick(walker, next) {
+	return walker.__paused__ ? walker.__ended__ ? walker.emit("end", false) : walker.__next__ = next : next()
+}
+
+/**
+ * Traverse the directory in an asynchronous way, recursively.
+ */
 function _dirRecurse(path, walker, next) {
 
 	libFs.stat(path, function(err, stat) {
 
+		if (err) {
+			walker.emit("error", err)
+			return _tick(walker, next)
+		}
+
+		if (stat.isDirectory()) {
+
+			walker.emit("dir", path, stat)
+
+			if (walker._kickout()) {
+				walker.emit("pop", path)
+				return _tick(walker, next)
+			}
+
+			libFs.readdir(path, function(err, files) {
+				var base = path
+
+				if (err) {
+					walker.emit("pop", base)
+					walker.emit("error", err)
+					return _tick(walker, next)
+				}
+
+				if(walker.__sortfunc__) {
+					files.length > 1 && files.sort(walker.__sortfunc__)
+				}
+
+				function oneByOne() {
+					var file
+					if (file = files.shift()) {
+						_dirRecurse(libPath.join(base, file), walker, oneByOne)
+					} else {
+						walker.emit("pop", base)
+						_tick(walker, next)
+					}
+				}
+
+				_tick(walker, oneByOne)
+			})
+		} else {
+			walker.emit(stat.isFile() ? "file" : "other", path, stat)
+			_tick(walker, next)
+		}
+	})
+}
+
+function _syncRecursive(source, dest, walker, next) {
+
+	libFs.stat(source, function(err, stat) {
+
 		if(err) {
-			walker.emit("error", err);
-			return _tick(walker, next);
+			walker.emit("error", err)
+			return _tick(walker, next)
 		}
 
 		if(stat.isDirectory()) {
 
-			walker.emit("dir", path, stat);
+			walker.emit("dir", source, dest, stat)
 
-			libFs.readdir(path, function(err, files) {
-				var base = path;
+			if (walker._kickout()) {
+				walker.emit("pop", source, dest)
+				return _tick(walker, next)
+			}
 
-				if(err) {
-					walker.emit("error", err);
-					return _tick(walker, next);
+			libFs.readdir(source, function(err, files) {
+
+				if (err) {
+					walker.emit("pop", source, dest)
+					walker.emit("error", err)
+					return _tick(walker, next)
+				}
+
+				if(walker.__sortfunc__) {
+					files.length > 1 && files.sort(walker.__sortfunc__)
 				}
 
 				function oneByOne() {
-					var file;
-					if(file = files.shift()) {
-						_dirRecurse(libPath.join(base, file), walker, oneByOne);
+					var file
+					if (file = files.shift()) {
+						_syncRecursive(libPath.join(source, file), libPath.join(dest, file), walker, oneByOne)
 					} else {
-						walker.emit("dir_pop", base);
-						_tick(walker, next);
+						walker.emit("pop", source, dest)
+						_tick(walker, next)
 					}
 				}
 
-				_tick(walker, oneByOne);
+				_tick(walker, oneByOne)
 			});
-		} else if(stat.isFile()) {
-			walker.emit("file", path, stat);
-			_tick(walker, next);
 		} else {
-			walker.emit("other", path, stat);
-			_tick(walker, next);
+			walker.emit(stat.isFile() ? "file" : "other", source, dest, stat)
+			_tick(walker, next)
 		}
 	});
 }
 
-module.exports = DirWalker;
+module.exports = function(fn) {
+	return new DirWalker(fn)
+}

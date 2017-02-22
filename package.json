@@ -1,6 +1,6 @@
 {
   "name": "dir-walker",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "An safe, simple realization to traverse an directory in an asynchronous way, recursively, with pausable & resumable feature.",
   "main": "index.js",
   "scripts": {
