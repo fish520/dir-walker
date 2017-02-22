@@ -1,7 +1,7 @@
 # dir-walker
 
 An safe, simple realization to traverse an directory in an asynchronous way, recursively, with pausable &amp; resumable feature.  
-This is the `2.0 version`, the old v1.0 branch is available [here](). 
+This is the `2.0 version`, the old v1.0 branch is available [here](https://github.com/fish520/dir-walker/tree/v1.0). 
 
 **graceful features**
 
