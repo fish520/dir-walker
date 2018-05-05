@@ -1,11 +1,10 @@
-
-var EventEmitter = require("events").EventEmitter
-var libUtil = require("util")
-var libFs = require("fs")
-var libPath = require("path")
+let EventEmitter = require('events').EventEmitter
+let libUtil = require('util')
+let libFs = require('fs')
+let libPath = require('path')
 
 function DirWalker(comparator) {
-  var skip = false
+  let skip = false
 
   EventEmitter.call(this)
 
@@ -19,7 +18,7 @@ function DirWalker(comparator) {
     return skip ? !(skip = false) : false
   }
 
-  if(typeof comparator === "function") {
+  if(typeof comparator === 'function') {
     this.__sortfunc__ = comparator
   }
 }
@@ -30,22 +29,22 @@ libUtil.inherits(DirWalker, EventEmitter)
  * start the walker.
  */
 DirWalker.prototype.start = function(path, dest) {
-  var self = this
+  let self = this
 
   this.start = function(){}
 
   if(dest == undefined) {
-    _dirRecurse(path, self, function() {
+    _dirRecurse(path, self, () => {
       if (!self.__ended__) {
         self.__ended__ = true
-        self.emit("end", true)
+        self.emit('end', true)
       }
     })
   } else {
-    _syncRecursive(path, dest, self, function() {
+    _syncRecursive(path, dest, self, () => {
       if (!self.__ended__) {
         self.__ended__ = true
-        self.emit("end", true)
+        self.emit('end', true)
       }
     })
   }
@@ -62,9 +61,9 @@ DirWalker.prototype.pause = function() {
  * Go on the recursion.
  */
 DirWalker.prototype.resume = function() {
-  var next = this.__next__
+  let next = this.__next__
 
-  if (typeof next === "function") {
+  if (typeof next === 'function') {
     this.__next__ = null
     this.__paused__ = false
     next()
@@ -75,8 +74,9 @@ DirWalker.prototype.resume = function() {
  * Go a single step manually, supposed to be invoked in a paused state only.
  */
 DirWalker.prototype.step = function() {
-  var next = this.__next__
-  if (typeof next === "function") {
+  let next = this.__next__
+
+  if (typeof next === 'function') {
     this.__next__ = null
     next()
   }
@@ -86,7 +86,7 @@ DirWalker.prototype.step = function() {
  * Terminate the recurse manually, well-designed.
  */
 DirWalker.prototype.end = function() {
-  this.__paused__ ? this.emit("end", false) : this.pause()
+  this.__paused__ ? this.emit('end', false) : this.pause()
   this.__next__ = null
   this.__ended__ = true
 }
@@ -95,7 +95,7 @@ DirWalker.prototype.end = function() {
  * Remember the pause point, or just keep going on.
  */
 function _tick(walker, next) {
-  return walker.__paused__ ? walker.__ended__ ? walker.emit("end", false) : walker.__next__ = next : next()
+  return walker.__paused__ ? walker.__ended__ ? walker.emit('end', false) : walker.__next__ = next : next()
 }
 
 /**
@@ -103,28 +103,28 @@ function _tick(walker, next) {
  */
 function _dirRecurse(path, walker, next) {
 
-  libFs.stat(path, function(err, stat) {
+  libFs.stat(path, (err, stat) => {
 
     if (err) {
-      walker.emit("error", err)
+      walker.emit('error', err)
       return _tick(walker, next)
     }
 
     if (stat.isDirectory()) {
 
-      walker.emit("dir", path, stat)
+      walker.emit('dir', path, stat)
 
       if (walker._kickout()) {
-        walker.emit("pop", path)
+        walker.emit('pop', path)
         return _tick(walker, next)
       }
 
-      libFs.readdir(path, function(err, files) {
-        var base = path
+      libFs.readdir(path, (err, files) => {
+        let base = path
 
         if (err) {
-          walker.emit("pop", base)
-          walker.emit("error", err)
+          walker.emit('pop', base)
+          walker.emit('error', err)
           return _tick(walker, next)
         }
 
@@ -133,11 +133,12 @@ function _dirRecurse(path, walker, next) {
         }
 
         function oneByOne() {
-          var file
+          let file
+
           if (file = files.shift()) {
             _dirRecurse(libPath.join(base, file), walker, oneByOne)
           } else {
-            walker.emit("pop", base)
+            walker.emit('pop', base)
             _tick(walker, next)
           }
         }
@@ -145,7 +146,7 @@ function _dirRecurse(path, walker, next) {
         _tick(walker, oneByOne)
       })
     } else {
-      walker.emit(stat.isFile() ? "file" : "other", path, stat)
+      walker.emit(stat.isFile() ? 'file' : 'other', path, stat)
       _tick(walker, next)
     }
   })
@@ -153,27 +154,27 @@ function _dirRecurse(path, walker, next) {
 
 function _syncRecursive(source, dest, walker, next) {
 
-  libFs.stat(source, function(err, stat) {
+  libFs.stat(source, (err, stat) => {
 
     if(err) {
-      walker.emit("error", err)
+      walker.emit('error', err)
       return _tick(walker, next)
     }
 
     if(stat.isDirectory()) {
 
-      walker.emit("dir", source, dest, stat)
+      walker.emit('dir', source, dest, stat)
 
       if (walker._kickout()) {
-        walker.emit("pop", source, dest)
+        walker.emit('pop', source, dest)
         return _tick(walker, next)
       }
 
-      libFs.readdir(source, function(err, files) {
+      libFs.readdir(source, (err, files) => {
 
         if (err) {
-          walker.emit("pop", source, dest)
-          walker.emit("error", err)
+          walker.emit('pop', source, dest)
+          walker.emit('error', err)
           return _tick(walker, next)
         }
 
@@ -182,22 +183,23 @@ function _syncRecursive(source, dest, walker, next) {
         }
 
         function oneByOne() {
-          var file
+          let file
+
           if (file = files.shift()) {
             _syncRecursive(libPath.join(source, file), libPath.join(dest, file), walker, oneByOne)
           } else {
-            walker.emit("pop", source, dest)
+            walker.emit('pop', source, dest)
             _tick(walker, next)
           }
         }
 
         _tick(walker, oneByOne)
-      });
+      })
     } else {
-      walker.emit(stat.isFile() ? "file" : "other", source, dest, stat)
+      walker.emit(stat.isFile() ? 'file' : 'other', source, dest, stat)
       _tick(walker, next)
     }
-  });
+  })
 }
 
 module.exports = function(fn) {
