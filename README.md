@@ -23,32 +23,32 @@ An example:
 var DirWalker = require('dir-walker')
 
 function fsApi(path, init, callback) {
-	var walker = new DirWalker(path)
-	init(walker)
-	walker.once('end', callback)
+  var walker = new DirWalker(path)
+  init(walker)
+  walker.once('end', callback)
 }
 
 fsApi('D:\\workspace', (walker) => {
-	walker.on('file', (path, stat) => {
-		walker.pause()
-		setTimeout(() => { walker.resume() }, 100)  // print a file every 100ms
-		console.log('%c' + log_indent + path, 'color: #999;')
-	}).on('dir', (path, stat) => {
-		walker.pause()
-		setTimeout(() => { walker.resume() }, 100)
-		console.log(log_indent + '>> ' + path)
-		if (log_indent == '') log_indent = '- '
-		else log_indent = '\t' + log_indent
-		if (log_indent.length > 5) {
-			walker.end()    // terminate the recurse in an specific condition
-		}
-	}).on('pop', (path) => {
-		log_indent = log_indent.substr(1)
-	}).on('error', (err) => {
-		console.log(err)
-	})
+  walker.on('file', (path, stat) => {
+    walker.pause()
+    setTimeout(() => { walker.resume() }, 100)  // print a file every 100ms
+    console.log('%c' + log_indent + path, 'color: #999;')
+  }).on('dir', (path, stat) => {
+    walker.pause()
+    setTimeout(() => { walker.resume() }, 100)
+    console.log(log_indent + '>> ' + path)
+    if (log_indent == '') log_indent = '- '
+    else log_indent = '\t' + log_indent
+    if (log_indent.length > 5) {
+      walker.end()    // terminate the recurse in an specific condition
+    }
+  }).on('pop', (path) => {
+    log_indent = log_indent.substr(1)
+  }).on('error', (err) => {
+    console.log(err)
+  })
 }, (complete) => {
-	console.log('END: completed = ' + complete)
+  console.log('END: completed = ' + complete)
 })
 ```
 
@@ -62,33 +62,33 @@ var max_depth = 0
 var deepest_path = ''
 
 function fsApi(path, init, callback) {
-	var walker = new DirWalker(path)
-	init(walker)
-	walker.once('end', callback)
+  var walker = new DirWalker(path)
+  init(walker)
+  walker.once('end', callback)
 }
 
 fsApi('c:\\Windows', (walker) => {
-	walker.on('file', (path, stat) => {
-		accCount++
-		if (accCount == 1000) {
-			accCount = 0
-			total += 1000
-			console.log(total + ' files found')    // log every 1000 files.
-		}
-	}).on('dir', (path, stat) => {
-		depth++
-		if (depth > max_depth) {
-			max_depth = depth
-			deepest_path = path
-		}
-	}).on('pop', (path) => {
-		depth--
-	}).on('error', (err) => {
-		console.log(err)
-	})
+  walker.on('file', (path, stat) => {
+    accCount++
+    if (accCount == 1000) {
+      accCount = 0
+      total += 1000
+      console.log(total + ' files found')    // log every 1000 files.
+    }
+  }).on('dir', (path, stat) => {
+    depth++
+    if (depth > max_depth) {
+      max_depth = depth
+      deepest_path = path
+    }
+  }).on('pop', (path) => {
+    depth--
+  }).on('error', (err) => {
+    console.log(err)
+  })
 }, () => {
-	console.log('total ' + (total + accCount) + ' files, max_depth = ' + max_depth)
-	console.log('the deepest path is: ' + deepest_path)
+  console.log('total ' + (total + accCount) + ' files, max_depth = ' + max_depth)
+  console.log('the deepest path is: ' + deepest_path)
 })
 ```
 
