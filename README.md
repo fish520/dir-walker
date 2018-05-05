@@ -20,10 +20,11 @@ npm install dir-walker
 An example:
 
 ```javascript
-var DirWalker = require('dir-walker')
+let DirWalker = require('dir-walker')
 
 function fsApi(path, init, callback) {
-  var walker = new DirWalker(path)
+  let walker = new DirWalker(path)
+
   init(walker)
   walker.once('end', callback)
 }
@@ -31,14 +32,21 @@ function fsApi(path, init, callback) {
 fsApi('D:\\workspace', (walker) => {
   walker.on('file', (path, stat) => {
     walker.pause()
-    setTimeout(() => { walker.resume() }, 100)  // print a file every 100ms
+    setTimeout(() => {
+      walker.resume() 
+    }, 100)  // print a file every 100ms
     console.log('%c' + log_indent + path, 'color: #999;')
   }).on('dir', (path, stat) => {
     walker.pause()
-    setTimeout(() => { walker.resume() }, 100)
+    setTimeout(() => {
+      walker.resume() 
+    }, 100)
     console.log(log_indent + '>> ' + path)
-    if (log_indent == '') log_indent = '- '
-    else log_indent = '\t' + log_indent
+    if (log_indent == '') {
+      log_indent = '- '
+    } else {
+      log_indent = '\t' + log_indent
+    }
     if (log_indent.length > 5) {
       walker.end()    // terminate the recurse in an specific condition
     }
@@ -55,14 +63,15 @@ fsApi('D:\\workspace', (walker) => {
 Here is a test for large directory, no stack overflow is supposed to happen.
 
 ```javascript
-var depth = 0
-var total = 0
-var accCount = 0
-var max_depth = 0
-var deepest_path = ''
+let depth = 0
+let total = 0
+let accCount = 0
+let max_depth = 0
+let deepest_path = ''
 
 function fsApi(path, init, callback) {
-  var walker = new DirWalker(path)
+  let walker = new DirWalker(path)
+
   init(walker)
   walker.once('end', callback)
 }
@@ -168,19 +177,23 @@ _These are what comes with asynchronous operation, and not supposed to be regard
 
 Think you are dealing with a directory with unbelievable depth, and you may want to traverse it just a certain depth, let't say three.
 How is it possible ?
-It's evidently not efficient to just use a `depth counter` and ignore the callback processer, since we are actually causing unnecessary I/O with 
-every extra child file inside the directory. This is where the `ignore` method may help with.
+It's evidently not efficient to just use a `depth counter` and do nothing in the callback processer, since we are actually causing unnecessary I/O with all the extra files, this is where the `ignore` method may help with.
 The `DirWalker#ignore()` method just skip all staff inside the current directory, and go on where it is.  
 
 the code will be as simple as the following:  
 
 ```javascript
-walker.on('dir', function(){
-    if(depth++ > MAX_DEPTH) walker.ignore()
-});
-walker.on('pop', function(){
-    depth--
-});
+let depth = 0
+const MAX_DEPTH = 3
+
+walker.on('dir', () => {
+  if (depth++ > MAX_DEPTH) {
+    walker.ignore()
+  }
+})
+walker.on('pop', () => {
+  depth--
+})
 ```
 
 ## License
