@@ -11,6 +11,8 @@ This is the `2.0 version`, the old v1.0 branch is available [here](https://githu
 
 ## Install
 
+You can install bower using the following command:
+
 ```bash
 npm install dir-walker
 ```
